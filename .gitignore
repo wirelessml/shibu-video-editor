@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.tmp.wav
+.coverage
+.DS_Store
+
+# 受講生プライバシー保護: 削除依頼動画 (リサさん ZaCijqXrK0k) の transcript は公開しない
+# build_ground_truth.py をローカルで実行して再生成する
+tests/fixtures/ZaCijqXrK0k_transcript.json
+# テスト出力 (ローカル再生成可能)
+tests/output/
+

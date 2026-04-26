@@ -1,0 +1,224 @@
+{
+  "video": {
+    "raw_duration_seconds": 2244.0,
+    "estimated_output_seconds_min": 1680.0,
+    "estimated_output_seconds_max": 1920.0,
+    "cast": "コーチ × 受講生 (削除依頼後匿名化のサンプル)"
+  },
+  "sections": [
+    {
+      "name": "highlights",
+      "start_seconds": 0.0,
+      "end_seconds": 97.0,
+      "estimated_output_seconds": 80.0,
+      "notes": "フック (印象的シーン抜粋)"
+    },
+    {
+      "name": "coaching_day1",
+      "start_seconds": 97.0,
+      "end_seconds": 365.0,
+      "estimated_output_seconds": 240.0,
+      "notes": "初対面、状況把握、片付け方針"
+    },
+    {
+      "name": "coaching_day2",
+      "start_seconds": 365.0,
+      "end_seconds": 573.0,
+      "estimated_output_seconds": 180.0,
+      "notes": "実作業、しぶ指導"
+    },
+    {
+      "name": "coaching_day3",
+      "start_seconds": 573.0,
+      "end_seconds": 799.0,
+      "estimated_output_seconds": 200.0,
+      "notes": "仕上げ、結果確認"
+    },
+    {
+      "name": "before_after",
+      "start_seconds": 799.0,
+      "end_seconds": 827.0,
+      "estimated_output_seconds": 28.0,
+      "notes": "視覚的対比"
+    },
+    {
+      "name": "interview",
+      "start_seconds": 827.0,
+      "end_seconds": 2244.0,
+      "estimated_output_seconds": 1380.0,
+      "notes": "質問 8 問"
+    }
+  ],
+  "must_cuts": [
+    {
+      "pattern_id": "self_edit_directive",
+      "start_seconds": 120.5,
+      "end_seconds": 125.0,
+      "trigger_text": "ちょっとこれすいません、編集でカットしておきます",
+      "reason": "しぶ本人が編集指示した雑談 (推定箇所)"
+    },
+    {
+      "pattern_id": "silence_with_breath",
+      "start_seconds": 850.0,
+      "end_seconds": 855.0,
+      "trigger_text": "(無音 5 秒)",
+      "reason": "インタビュー直前の無音、短く詰める"
+    }
+  ],
+  "tempo_adjustments": [
+    {
+      "pattern_id": "filler_aizuchi",
+      "start_seconds": 950.0,
+      "end_seconds": 970.0,
+      "action": "halve",
+      "requires_approval": true,
+      "rationale": "「うんうん」相槌が密集、半分カットで流れ改善"
+    }
+  ],
+  "do_not_touch": [
+    {
+      "reason": "emotional_peak",
+      "start_seconds": 1245.0,
+      "end_seconds": 1489.0,
+      "description": "Q4 変化 (核となる成果)"
+    },
+    {
+      "reason": "emotional_peak",
+      "start_seconds": 1526.0,
+      "end_seconds": 1781.0,
+      "description": "Q6 内容で良かったところ (セールス前納得材料)"
+    },
+    {
+      "reason": "sales_section_q8",
+      "start_seconds": 1962.0,
+      "end_seconds": 2244.0,
+      "description": "Q8 視聴者メッセージ (収益化、ノーカット)"
+    }
+  ],
+  "tech_settings": {
+    "resolution": "1280x720",
+    "fps": 25,
+    "cut_boundary": "word_boundary",
+    "padding_ms": 100,
+    "fade_ms": 30,
+    "subtitle_burnin": false,
+    "color_grading": false
+  },
+  "interview_questions": [
+    {
+      "n": 1,
+      "title": "自己紹介",
+      "start_seconds": 855.0,
+      "end_seconds": 919.0,
+      "preserve": false
+    },
+    {
+      "n": 2,
+      "title": "なぜコーチングを購入しようと思ったの？",
+      "start_seconds": 919.0,
+      "end_seconds": 1065.0,
+      "preserve": false
+    },
+    {
+      "n": 3,
+      "title": "コーチングを受ける前の悩みは？",
+      "start_seconds": 1065.0,
+      "end_seconds": 1245.0,
+      "preserve": false
+    },
+    {
+      "n": 4,
+      "title": "コーチングを受けての変化は？",
+      "start_seconds": 1245.0,
+      "end_seconds": 1489.0,
+      "preserve": true
+    },
+    {
+      "n": 5,
+      "title": "オンラインコーチングに対する不安はあった？",
+      "start_seconds": 1489.0,
+      "end_seconds": 1526.0,
+      "preserve": false
+    },
+    {
+      "n": 6,
+      "title": "コーチングの内容で良かったところは？",
+      "start_seconds": 1526.0,
+      "end_seconds": 1781.0,
+      "preserve": true
+    },
+    {
+      "n": 7,
+      "title": "とくに頑張ったところは？",
+      "start_seconds": 1781.0,
+      "end_seconds": 1962.0,
+      "preserve": false
+    },
+    {
+      "n": 8,
+      "title": "視聴者さんへのメッセージ",
+      "start_seconds": 1962.0,
+      "end_seconds": 2244.0,
+      "preserve": true
+    }
+  ],
+  "chapters_for_description": [
+    {
+      "timestamp": "00:00",
+      "title": "ハイライト"
+    },
+    {
+      "timestamp": "1:37",
+      "title": "実際のコーチング（1日目）"
+    },
+    {
+      "timestamp": "6:05",
+      "title": "実際のコーチング（2日目）"
+    },
+    {
+      "timestamp": "9:33",
+      "title": "実際のコーチング（3日目）"
+    },
+    {
+      "timestamp": "13:19",
+      "title": "ビフォーアフター"
+    },
+    {
+      "timestamp": "13:47",
+      "title": "コーチング受講生インタビュー"
+    },
+    {
+      "timestamp": "14:15",
+      "title": "自己紹介"
+    },
+    {
+      "timestamp": "15:19",
+      "title": "なぜコーチングを購入しようと思ったの？"
+    },
+    {
+      "timestamp": "17:45",
+      "title": "コーチングを受ける前の悩みは？"
+    },
+    {
+      "timestamp": "20:45",
+      "title": "コーチングを受けての変化は？"
+    },
+    {
+      "timestamp": "24:49",
+      "title": "オンラインコーチングに対する不安はあった？"
+    },
+    {
+      "timestamp": "25:26",
+      "title": "コーチングの内容で良かったところは？"
+    },
+    {
+      "timestamp": "29:41",
+      "title": "とくに頑張ったところは？"
+    },
+    {
+      "timestamp": "32:42",
+      "title": "視聴者さんへのメッセージ"
+    }
+  ],
+  "summary_markdown": "# Ground truth: ZaCijqXrK0k 編集方針案 (description chapters から再構築)\n\n…"
+}

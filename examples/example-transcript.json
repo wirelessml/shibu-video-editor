@@ -1,0 +1,27 @@
+{
+  "_metadata": {
+    "note": "word-level transcript の最小サンプル。実際は数千 words あります。Whisper / ElevenLabs Scribe の出力形式と同じ。",
+    "source_video": "youtu.be/CQMlBGK8ikw (NDL 動画は無関係、形式参考用)"
+  },
+  "words": [
+    {"start_ms": 100, "end_ms": 350, "word": "千年"},
+    {"start_ms": 350, "end_ms": 600, "word": "家系図"},
+    {"start_ms": 600, "end_ms": 800, "word": "丸山"},
+    {"start_ms": 800, "end_ms": 1000, "word": "です"},
+    {"start_ms": 1100, "end_ms": 1300, "word": "え"},
+    {"start_ms": 1400, "end_ms": 1700, "word": "今日"},
+    {"start_ms": 1700, "end_ms": 1900, "word": "は"},
+    {"start_ms": 1900, "end_ms": 2100, "word": "ですね"},
+    {"start_ms": 3000, "end_ms": 3400, "word": "ごめんなさい"},
+    {"start_ms": 3500, "end_ms": 4100, "word": "もう一回"},
+    {"start_ms": 5500, "end_ms": 5700, "word": "千年"},
+    {"start_ms": 5700, "end_ms": 5900, "word": "家系図"},
+    {"start_ms": 9100, "end_ms": 9400, "word": "ちょっと"},
+    {"start_ms": 9400, "end_ms": 9700, "word": "これすいません"},
+    {"start_ms": 9700, "end_ms": 10300, "word": "編集でカットしておきます"},
+    {"start_ms": 31180, "end_ms": 31280, "word": "して"},
+    {"start_ms": 31280, "end_ms": 31380, "word": "して"},
+    {"start_ms": 31430, "end_ms": 31560, "word": "(無音)"},
+    {"start_ms": 31560, "end_ms": 31700, "word": "(鼻すすり)"}
+  ]
+}
