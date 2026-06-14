@@ -27,7 +27,7 @@ def transcribe_with_whisper(
         import whisper  # type: ignore[import-not-found]
     except ImportError as e:
         raise RuntimeError(
-            "openai-whisper が未インストール。pip install 'shibu-video-editor[transcribe]' を実行してください。"
+            "openai-whisper が未インストール。pip install 'takeru-video-editor[transcribe]' を実行してください。"
         ) from e
 
     model_obj = whisper.load_model(model)
@@ -63,7 +63,7 @@ def transcribe_with_elevenlabs(
         from elevenlabs.client import ElevenLabs  # type: ignore[import-not-found]
     except ImportError as e:
         raise RuntimeError(
-            "elevenlabs SDK が未インストール。pip install 'shibu-video-editor[elevenlabs]' を実行してください。"
+            "elevenlabs SDK が未インストール。pip install 'takeru-video-editor[elevenlabs]' を実行してください。"
         ) from e
 
     client = ElevenLabs(api_key=api_key)

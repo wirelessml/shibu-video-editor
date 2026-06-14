@@ -1,5 +1,5 @@
 [project]
-name = "shibu-video-editor"
+name = "takeru-video-editor"
 version = "0.1.0"
 description = "あい × Claude Code 受講生インタビュー編集パイプラインの実装"
 requires-python = ">=3.11"
@@ -18,7 +18,7 @@ elevenlabs = [
     "elevenlabs>=1.0.0",
 ]
 all = [
-    "shibu-video-editor[transcribe,elevenlabs]",
+    "takeru-video-editor[transcribe,elevenlabs]",
 ]
 
 [project.scripts]

@@ -1,4 +1,4 @@
-# shibu-video-editor
+# takeru-video-editor
 
 > ミニマリストしぶ片付けコーチング **受講生インタビュー動画** を Claude API で半自動編集するオープンソース CLI。
 > マスター構造リファレンス: [youtu.be/ZaCijqXrK0k](https://youtu.be/ZaCijqXrK0k)（37:24、4 大セクション + 8 問構造の最も透明な公開動画）。
@@ -52,7 +52,7 @@ ZaCijqXrK0k から抽出:
 ## インストール
 
 ```bash
-cd shibu-video-editor
+cd takeru-video-editor
 pip install -e .
 
 # 文字起こしまで使うなら
