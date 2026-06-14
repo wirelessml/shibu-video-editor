@@ -28,13 +28,17 @@ def compute_keep_segments(
         for adj in plan.tempo_adjustments:
             cut_ranges.append((adj.start_seconds, adj.end_seconds))
 
-    # do_not_touch とぶつかるカットは除外 (保護)
+    # do_not_touch と重なる部分を各カットから差し引く (保護範囲は必ず残す)。
+    # 旧実装は少しでも重なるカットを丸ごと捨てており、保護範囲外の前後まで
+    # 切れずに残っていた (Codex review #6)。完全内包される誤カットは
+    # 差し引き後に空になり、従来どおり無視される。
     protected: list[tuple[float, float]] = [
         (d.start_seconds, d.end_seconds) for d in plan.do_not_touch
     ]
-    cut_ranges = [
-        (s, e) for (s, e) in cut_ranges if not _overlaps_any(s, e, protected)
-    ]
+    subtracted: list[tuple[float, float]] = []
+    for s, e in cut_ranges:
+        subtracted.extend(_subtract_ranges(s, e, protected))
+    cut_ranges = subtracted
 
     # ソート + マージ
     cut_ranges.sort()
@@ -58,8 +62,23 @@ def compute_keep_segments(
     return keeps
 
 
-def _overlaps_any(s: float, e: float, ranges: list[tuple[float, float]]) -> bool:
-    return any(not (e <= rs or s >= re) for rs, re in ranges)
+def _subtract_ranges(
+    s: float, e: float, protected: list[tuple[float, float]]
+) -> list[tuple[float, float]]:
+    """範囲 (s, e) から protected 群と重なる部分を差し引いた残りを返す."""
+    segments: list[tuple[float, float]] = [(s, e)]
+    for ps, pe in protected:
+        nxt: list[tuple[float, float]] = []
+        for cs, ce in segments:
+            if pe <= cs or ps >= ce:
+                nxt.append((cs, ce))  # 重なりなし
+                continue
+            if cs < ps:
+                nxt.append((cs, ps))  # 保護範囲の手前
+            if pe < ce:
+                nxt.append((pe, ce))  # 保護範囲の後ろ
+        segments = nxt
+    return [(a, b) for a, b in segments if b - a > 1e-9]
 
 
 def generate_ffmpeg_concat_script(
@@ -71,30 +90,59 @@ def generate_ffmpeg_concat_script(
     padding_ms: int = WORD_BOUNDARY_PADDING_MS,
     fade_ms: int = CROSSFADE_MS,
 ) -> str:
-    """残す範囲を ffmpeg select / concat フィルターで結合するスクリプトを生成.
+    """残す範囲を ffmpeg trim/atrim + concat で結合するスクリプトを生成.
 
-    word boundary padding と クロスフェードを技術設定に従って適用。
+    各セグメントを個別に trim し concat で連結することで、境界ごとに
+    短い afade (in/out) を挿入できる。旧実装は select/aselect で全体を
+    1 本にまとめ冒頭だけ fade-in していたため、CROSSFADE_MS が狙う境界の
+    ブツ音防止が効いていなかった (Codex review #2)。
     """
     keeps = compute_keep_segments(plan, apply_tempo_adjustments=apply_tempo_adjustments)
+    if not keeps:
+        raise ValueError(
+            "残す範囲が 0 セグメントです (全区間がカット対象)。"
+            " must_cuts / tempo_adjustments が動画全体を覆っていないか確認してください。"
+        )
+
     pad_s = padding_ms / 1000.0
     fade_s = fade_ms / 1000.0
+    raw_duration = plan.video.raw_duration_seconds
 
     # 各セグメントに padding を加える
     padded: list[tuple[float, float]] = []
     for s, e in keeps:
-        padded.append((max(0.0, s - pad_s), min(plan.video.raw_duration_seconds, e + pad_s)))
-
-    # ffmpeg select filter: between(t,a,b)+between(t,c,d)+...
-    select_clauses_v = "+".join(f"between(t,{s:.3f},{e:.3f})" for s, e in padded)
-    select_clauses_a = select_clauses_v
+        padded.append((max(0.0, s - pad_s), min(raw_duration, e + pad_s)))
 
     width, height = RESOLUTION.split("x")
 
+    # trim/atrim セグメント + 境界フェード → concat
+    graph_parts: list[str] = []
+    concat_inputs: list[str] = []
+    for i, (s, e) in enumerate(padded):
+        seg_dur = e - s
+        # フェード長はセグメント尺の半分を超えない (in/out の重なり防止)
+        seg_fade = min(fade_s, seg_dur / 2.0) if seg_dur > 0 else 0.0
+        fade_out_st = max(0.0, seg_dur - seg_fade)
+        graph_parts.append(
+            f"[0:v]trim=start={s:.3f}:end={e:.3f},setpts=PTS-STARTPTS[v{i}]"
+        )
+        graph_parts.append(
+            f"[0:a]atrim=start={s:.3f}:end={e:.3f},asetpts=PTS-STARTPTS,"
+            f"afade=t=in:st=0:d={seg_fade:.3f},"
+            f"afade=t=out:st={fade_out_st:.3f}:d={seg_fade:.3f}[a{i}]"
+        )
+        concat_inputs.append(f"[v{i}][a{i}]")
+
+    n = len(padded)
+    graph_parts.append("".join(concat_inputs) + f"concat=n={n}:v=1:a=1[vc][a]")
+    graph_parts.append(f"[vc]fps={FPS},scale={width}:{height}[v]")
+    filtergraph = ";".join(graph_parts)
+
     cmd_lines = [
         "#!/usr/bin/env bash",
-        "# 自動生成: shibu-video-editor (manual §4.6 Step 5)",
-        f"# input: {input_video}",
-        f"# output: {output_video}",
+        "# 自動生成: takeru-video-editor (manual §4.6 Step 5)",
+        f"# input: {_safe_comment(input_video)}",
+        f"# output: {_safe_comment(output_video)}",
         f"# segments: {len(keeps)}",
         f"# total kept seconds: {sum(e - s for s, e in keeps):.1f}",
         "",
@@ -102,9 +150,7 @@ def generate_ffmpeg_concat_script(
         "",
         "ffmpeg -y \\",
         f"  -i {_shell_quote(str(input_video))} \\",
-        "  -filter_complex \\",
-        f"    \"[0:v]select='{select_clauses_v}',setpts=N/FRAME_RATE/TB,fps={FPS},scale={width}:{height}[v]; \\",
-        f"     [0:a]aselect='{select_clauses_a}',asetpts=N/SR/TB,afade=t=in:d={fade_s}:st=0[a]\" \\",
+        f"  -filter_complex {_shell_quote(filtergraph)} \\",
         '  -map "[v]" -map "[a]" \\',
         f"  -c:v libx264 -preset medium -crf 18 -r {FPS} \\",
         "  -c:a aac -b:a 192k \\",
@@ -117,6 +163,16 @@ def generate_ffmpeg_concat_script(
 def _shell_quote(s: str) -> str:
     """シェル安全引用."""
     return "'" + s.replace("'", "'\\''") + "'"
+
+
+def _safe_comment(value: object) -> str:
+    """コメント行に埋め込むパスから改行・制御文字を除去.
+
+    `# input: {path}` のコメントは 1 行しかコメントアウトしないため、
+    改行を含むファイル名をそのまま埋め込むと後続が実行行になり
+    script injection になり得る (Codex review §6)。印字不可文字は空白へ。
+    """
+    return "".join(ch if ch.isprintable() else " " for ch in str(value))
 
 
 def write_keep_segments_csv(plan: EditingPlan, path: Path, *, apply_tempo_adjustments: bool = False) -> None:

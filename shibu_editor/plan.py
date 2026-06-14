@@ -7,7 +7,7 @@ import os
 from typing import Any
 
 import anthropic
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from .config import (
     DURATION_TARGET_MAX,
@@ -92,6 +92,42 @@ class EditingPlan(BaseModel):
     interview_questions: list[InterviewQuestion] = Field(default_factory=list)
     chapters_for_description: list[Chapter] = Field(default_factory=list)
     summary_markdown: str = ""
+
+    @model_validator(mode="after")
+    def _validate_time_ranges(self) -> "EditingPlan":
+        """Claude が返す時刻レンジを検証.
+
+        負値・end<=start・動画長超過を弾く。AI 生成プランをそのまま
+        カット計算に流すと、重複 keep / 動画外 keep / CSV と ffmpeg の
+        不一致を招くため、保存前にここで失敗させる (Codex review #3)。
+        """
+        raw = self.video.raw_duration_seconds
+        if raw <= 0:
+            raise ValueError(f"raw_duration_seconds は正の値が必要です: {raw}")
+
+        tol = 1e-6
+        groups: dict[str, list] = {
+            "sections": self.sections,
+            "must_cuts": self.must_cuts,
+            "tempo_adjustments": self.tempo_adjustments,
+            "do_not_touch": self.do_not_touch,
+            "interview_questions": self.interview_questions,
+        }
+        for name, items in groups.items():
+            for i, it in enumerate(items):
+                s = it.start_seconds
+                e = it.end_seconds
+                if s < -tol:
+                    raise ValueError(f"{name}[{i}] の start_seconds が負: {s}")
+                if e <= s + tol:
+                    raise ValueError(
+                        f"{name}[{i}] の end_seconds({e}) が start_seconds({s}) 以下"
+                    )
+                if e > raw + tol:
+                    raise ValueError(
+                        f"{name}[{i}] の end_seconds({e}) が raw_duration({raw}) を超過"
+                    )
+        return self
 
 
 def _format_seconds(s: float) -> str:

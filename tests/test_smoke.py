@@ -102,7 +102,8 @@ def test_ffmpeg_script_is_executable_format() -> None:
     assert "1280:720" in script
     assert "fps=25" in script
     assert "-c:v libx264" in script
-    assert "between(t," in script  # select filter
+    assert "trim=start=" in script  # trim/atrim + concat 方式
+    assert "concat=n=" in script
 
 
 def test_render_chapters_format() -> None:

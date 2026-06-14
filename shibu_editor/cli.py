@@ -55,18 +55,19 @@ def _probe_duration_seconds(video: Path) -> float:
     return float(result.stdout.strip())
 
 
-@app.command()
-def transcribe(
-    video: Path = typer.Argument(..., help="動画ファイル (.mp4 等)", exists=True),
-    output: Path = typer.Option(
-        ..., "--output", "-o", help="出力 JSON パス (word-level timestamp)"
-    ),
-    backend: str = typer.Option(
-        "whisper", "--backend", "-b", help="whisper / elevenlabs"
-    ),
-    model: str = typer.Option("large-v3", "--model", "-m", help="Whisper モデル名"),
-) -> None:
-    """動画 → word-level timestamp 起こし JSON (manual §6.1 Step 1, §6.2)."""
+def _transcribe_video(
+    video: Path,
+    output: Path,
+    *,
+    backend: str = "whisper",
+    model: str = "large-v3",
+) -> int:
+    """動画 → word-level transcript JSON を書き出す純関数.
+
+    CLI コマンド (`transcribe`) と一括実行 (`pipeline`) で共有する。
+    pipeline から typer.Context 経由で呼ぶ旧実装は Typer/Click で壊れて
+    いたため、関数共有に切り出した (Codex review #1)。返り値は word 数。
+    """
     audio_tmp = video.with_suffix(".tmp.wav")
     console.print(f"[cyan]🎙️  音声抽出中: {video.name} → {audio_tmp.name}[/cyan]")
     extract_audio_with_ffmpeg(video, audio_tmp)
@@ -94,6 +95,22 @@ def transcribe(
         encoding="utf-8",
     )
     console.print(f"[green]✅ 完了: {len(words)} words → {output}[/green]")
+    return len(words)
+
+
+@app.command()
+def transcribe(
+    video: Path = typer.Argument(..., help="動画ファイル (.mp4 等)", exists=True),
+    output: Path = typer.Option(
+        ..., "--output", "-o", help="出力 JSON パス (word-level timestamp)"
+    ),
+    backend: str = typer.Option(
+        "whisper", "--backend", "-b", help="whisper / elevenlabs"
+    ),
+    model: str = typer.Option("large-v3", "--model", "-m", help="Whisper モデル名"),
+) -> None:
+    """動画 → word-level timestamp 起こし JSON (manual §6.1 Step 1, §6.2)."""
+    _transcribe_video(video, output, backend=backend, model=model)
 
 
 @app.command()
@@ -307,11 +324,9 @@ def pipeline(
 
     if transcript is None:
         console.print("[bold]Step 1/4: 文字起こし[/bold]")
-        ctx = typer.Context(transcribe)
-        ctx.invoke(
-            transcribe,
-            video=video,
-            output=transcript_path,
+        _transcribe_video(
+            video,
+            transcript_path,
             backend="whisper",
             model="large-v3",
         )

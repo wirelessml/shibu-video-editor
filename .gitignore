@@ -15,3 +15,16 @@ tests/fixtures/ZaCijqXrK0k_transcript.json
 # テスト出力 (ローカル再生成可能)
 tests/output/
 
+# 受講生 PII を含み得る生成物の誤コミット防止 (Codex review §6)
+# transcript / plan / メタデータは個人情報・住居情報を含むため公開しない
+output/
+transcript.json
+plan*.json
+plan*.md
+description.txt
+title.txt
+tags.txt
+chapters.txt
+*-cut.mp4
+*.ffmpeg.sh
+
